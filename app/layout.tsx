@@ -11,7 +11,12 @@ const nav = [
   { href: "/", label: "Home" },
   { href: "/shows", label: "Shows" },
   { href: "/music", label: "Music" },
-  { href: "/gallery", label: "Gallery" }, // ✅ Added here
+  { href: "/gallery", label: "Gallery" },
+  {
+    href: "https://stores.middlecreekprinting.com/briellasteiner/all-items",
+    label: "Merch",
+    external: true,
+  },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -38,11 +43,27 @@ export default function RootLayout({
                 </Link>
 
                 <nav className="nav">
-                  {nav.map((item) => (
-                    <Link key={item.href} href={item.href} className="nav-link">
-                      {item.label}
-                    </Link>
-                  ))}
+                  {nav.map((item) =>
+                    item.external ? (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className="nav-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="nav-link"
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  )}
                 </nav>
               </div>
             </div>
