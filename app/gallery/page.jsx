@@ -1,97 +1,129 @@
 import Image from "next/image";
+import { getApprovedFanPhotos } from "../../lib/fan-photos";
+import FanPhotoForm from "./FanPhotoForm";
 import styles from "./gallery.module.css";
 
 const images = [
-  { src: "/gallery/gallery1.jpg", alt: "Gallery image 1", cls: "a" },
-  { src: "/gallery/gallery2.jpg", alt: "Gallery image 2", cls: "b" },
-  { src: "/gallery/gallery3.jpg", alt: "Gallery image 3", cls: "c" },
-  { src: "/gallery/gallery4.jpg", alt: "Gallery image 4", cls: "d" },
-  { src: "/gallery/gallery5.jpg", alt: "Gallery image 5", cls: "e" },
-  { src: "/gallery/gallery6.jpg", alt: "Gallery image 6", cls: "f" },
-  { src: "/gallery/gallery7.jpg", alt: "Gallery image 7", cls: "g" },
-  { src: "/gallery/gallery8.jpg", alt: "Gallery image 8", cls: "h" },
-  { src: "/gallery/gallery9.jpg", alt: "Gallery image 9", cls: "i" },
-  { src: "/gallery/gallery10.jpg", alt: "Gallery image 10", cls: "j" },
+  { src: "/gallery/gallery3.jpg", alt: "Briella Steiner performing under warm stage lights", cls: "hero" },
+  { src: "/gallery/official-profile-guitar.jpg", alt: "Briella Steiner standing outdoors with a black guitar", cls: "guitar" },
+  { src: "/gallery/official-live-performance.jpg", alt: "Briella Steiner singing onstage", cls: "live" },
+  { src: "/gallery/gallery2.jpg", alt: "Briella Steiner singing under colorful concert lights", cls: "tall" },
+  { src: "/gallery/gallery8.jpg", alt: "Black-and-white portrait of Briella Steiner wearing boots", cls: "portrait" },
+  { src: "/gallery/owner-live-closeup.jpg", alt: "Briella Steiner singing into a handheld microphone onstage", cls: "ownerLive" },
+  { src: "/gallery/official-tour-bus.jpg", alt: "Briella Steiner standing beside a black tour bus", cls: "road" },
+  { src: "/gallery/gallery9.jpg", alt: "Black-and-white sidewalk portrait of Briella Steiner", cls: "portraitTwo" },
+  { src: "/gallery/gallery7.jpg", alt: "Briella Steiner walking in silver boots", cls: "walk" },
 ];
 
 const videos = [
-  {
-    title: "Briella Steiner Video 1",
-    youtubeId: "BaumMPEcJtw",
-  },
-  {
-    title: "Briella Steiner Video 2",
-    youtubeId: "4WxbhncIAF4",
-  },
+  { title: "Briella Steiner featured video", youtubeId: "BaumMPEcJtw" },
+  { title: "Briella Steiner performance video", youtubeId: "4WxbhncIAF4" },
 ];
+
+// Keep the completed fan-photo workflow in source while the public directory is paused.
+const fanPhotoFeatureEnabled = false;
 
 export const metadata = {
   title: "Gallery",
-  description: "A scrapbook-style gallery of moments, highlights, and visuals.",
+  description: "Photos and featured videos from Briella Steiner.",
 };
 
-export default function GalleryPage() {
+export const revalidate = 300;
+
+export default async function GalleryPage() {
+  const fanPhotos = fanPhotoFeatureEnabled ? await getApprovedFanPhotos() : [];
+
   return (
-    <div className="card">
-      <div className={styles.wrap}>
-        <div className={styles.header}>
-          <h1 className="h1">Gallery</h1>
-          <p className={`muted ${styles.intro}`}>
-            A collage of moments, highlights, and visuals from across the brand.
-          </p>
+    <div className="interior-page">
+      <section className="interior-hero gallery-heading">
+        <p className="eyebrow">On stage &amp; off</p>
+        <h1>Gallery</h1>
+        <p className="interior-lead">
+          Live energy, quiet moments, and a look behind the music.
+        </p>
+      </section>
+
+      <section className={styles.photoSection} aria-label="Briella Steiner photos">
+        <div className={styles.grid}>
+          {images.map((image, index) => (
+            <figure key={image.src} className={`${styles.tile} ${styles[image.cls]}`}>
+              <Image
+                src={image.src}
+                alt={image.alt}
+                fill
+                priority={index < 2}
+                sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 34vw"
+                className={styles.image}
+              />
+            </figure>
+          ))}
         </div>
+      </section>
 
-        {/* VIDEO SECTION */}
-        <div style={{ marginTop: 30 }}>
-          <h2 className="h2">Videos</h2>
+      {fanPhotoFeatureEnabled && fanPhotos.length > 0 && (
+        <section className={styles.fanGallery} aria-labelledby="fan-gallery-heading">
+          <div className={styles.fanHeading}>
+            <p className="eyebrow">Seen through your lens</p>
+            <h2 id="fan-gallery-heading">Fan photos</h2>
+            <p>Moments shared by the people in the crowd.</p>
+          </div>
+          <div className={styles.fanGrid}>
+            {fanPhotos.map((photo) => (
+              <figure className={styles.fanTile} key={photo._id}>
+                <div className={styles.fanImage}>
+                  <Image
+                    src={`/api/fan-photos/image/${encodeURIComponent(photo.assetId)}`}
+                    alt={photo.altText || photo.caption || `Photo shared by ${photo.credit}`}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 680px) 100vw, (max-width: 1000px) 50vw, 33vw"
+                  />
+                </div>
+                <figcaption>
+                  {photo.caption && <span>{photo.caption}</span>}
+                  <strong>Photo: {photo.credit}</strong>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: 20,
-              marginTop: 16,
-            }}
-          >
+      {fanPhotoFeatureEnabled && (
+        <section className={styles.submitSection} aria-labelledby="fan-submit-heading">
+          <div className={styles.submitIntro}>
+            <p className="eyebrow">Share a moment</p>
+            <h2 id="fan-submit-heading">Got a great shot?</h2>
+            <p>
+              Send us your favorite photo from a Briella show. Every submission stays
+              private while it is screened and reviewed.
+            </p>
+          </div>
+          <FanPhotoForm />
+        </section>
+      )}
+
+      <section className="video-gallery" aria-labelledby="gallery-video-heading">
+        <div className="section-kicker">
+          <span>Watch</span>
+          <p>Featured videos</p>
+        </div>
+        <div>
+          <h2 id="gallery-video-heading">From the screen</h2>
+          <div className="video-grid">
             {videos.map((video) => (
-              <div key={video.youtubeId}>
+              <div className="video-frame" key={video.youtubeId}>
                 <iframe
-                  width="100%"
-                  height="215"
-                  style={{ borderRadius: 12 }}
                   src={`https://www.youtube.com/embed/${video.youtubeId}`}
                   title={video.title}
-                  frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-                <p className="muted" style={{ marginTop: 8 }}>
-                  {video.title}
-                </p>
               </div>
             ))}
           </div>
         </div>
-
-        {/* IMAGE GRID */}
-        <div className={styles.grid} style={{ marginTop: 30 }}>
-          {images.map((image, index) => (
-            <div
-              key={image.src}
-              className={`${styles.tile} ${styles[image.cls]}`}
-            >
-              <Image
-                src={image.src}
-                alt={image.alt}
-                width={1200}
-                height={1600}
-                priority={index < 3}
-                className={styles.image}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

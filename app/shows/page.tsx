@@ -1,68 +1,119 @@
-export default function ShowsPage() {
+import Link from "next/link";
+import { sanityClient } from "../../lib/sanity.client";
+import { UPCOMING_SHOWS_QUERY } from "../../lib/sanity.queries";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Shows",
+  description: "View Briella Steiner's posted show schedule and booking information.",
+};
+
+type Show = {
+  _id: string;
+  title?: string;
+  startDate?: string;
+  venue?: string;
+  city?: string;
+  stateRegion?: string;
+  timezone?: string;
+  details?: string;
+  ticketUrl?: string;
+};
+
+function getShowDate(iso?: string, timezone?: string) {
+  if (!iso || !timezone) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+
+  try {
+    return {
+      day: new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", timeZone: timezone }).format(date),
+      year: new Intl.DateTimeFormat("en-US", { year: "numeric", timeZone: timezone }).format(date),
+      time: new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: timezone }).format(date),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function getSafeTicketUrl(raw?: string) {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export default async function ShowsPage() {
+  const shows = ((await sanityClient.fetch(UPCOMING_SHOWS_QUERY).catch(() => [])) || []) as Show[];
+
   return (
-    <div
-      style={{
-        position: "relative",
-        borderRadius: 18,
-        overflow: "hidden",
-        minHeight: "70vh",
-      }}
-    >
-      {/* Page-only background image */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "radial-gradient(circle at 20% 0%, rgba(0,0,0,0.20), rgba(0,0,0,0.72) 55%), radial-gradient(circle at 80% 20%, rgba(0,0,0,0.12), rgba(0,0,0,0.82) 60%), url('/Dates.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          filter: "saturate(1.05) contrast(1.02)",
-          transform: "scale(1.02)",
-        }}
-      />
+    <div className="interior-page">
+      <section className="interior-hero shows-hero">
+        <p className="eyebrow">On the road</p>
+        <h1>Live shows</h1>
+        <p className="interior-lead">
+          View Briella&apos;s posted schedule below. Confirm event details with
+          the venue before making plans.
+        </p>
+      </section>
 
-      {/* Content */}
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div className="card" style={{ marginBottom: 14 }}>
-          <h1 className="h1" style={{ fontSize: 34 }}>
-            Shows
-          </h1>
-          <p className="muted" style={{ marginTop: 10 }}>
-            All upcoming dates are listed on the schedule image below.
-          </p>
+      <section className="schedule-section" aria-labelledby="upcoming-shows-heading">
+        <div className="schedule-heading">
+          <p className="eyebrow">Upcoming dates</p>
+          <h2 id="upcoming-shows-heading">See you out there.</h2>
         </div>
 
-        {/* Main schedule display (no extra glass over it) */}
-        <div
-          style={{
-            borderRadius: 18,
-            overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.14)",
-            background: "rgba(0,0,0,0.25)",
-          }}
-        >
-          <img
-            src="/Dates.jpg"
-            alt="Brie show dates schedule"
-            style={{
-              width: "100%",
-              height: "auto",
-              display: "block",
-            }}
-          />
-        </div>
+        {shows.length > 0 ? (
+          <div className="cms-show-list">
+            {shows.map((show) => {
+              const date = getShowDate(show.startDate, show.timezone);
+              const ticketUrl = getSafeTicketUrl(show.ticketUrl);
+              const location = [show.city, show.stateRegion].filter(Boolean).join(", ");
 
-        {/* Optional note card */}
-        <div className="card" style={{ marginTop: 14 }}>
-          <h2 className="h2">Booking</h2>
-          <p className="muted">
-            Want Brie at your venue or event? Head to the Contact page to book.
-          </p>
+              return (
+                <article className="cms-show-card" key={show._id}>
+                  <time className="cms-show-date" dateTime={show.startDate}>
+                    <strong>{date?.day || "TBA"}</strong>
+                    <span>{date?.year || ""}</span>
+                  </time>
+                  <div className="cms-show-main">
+                    <h3>{show.title || "Briella Steiner live"}</h3>
+                    <p>{[show.venue, location].filter(Boolean).join(" · ")}</p>
+                    {show.details ? <p className="cms-show-details">{show.details}</p> : null}
+                  </div>
+                  <div className="cms-show-action">
+                    {date?.time ? <span>{date.time}</span> : null}
+                    {ticketUrl ? (
+                      <a href={ticketUrl} target="_blank" rel="noopener noreferrer">
+                        Event details ↗
+                      </a>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="schedule-empty">
+            <strong>New dates coming soon.</strong>
+            <span>Follow Briella for the next show announcement.</span>
+          </div>
+        )}
+      </section>
+
+      <section className="route-cta">
+        <div>
+          <p className="eyebrow">Venues &amp; events</p>
+          <h2>Want Briella at your next event?</h2>
         </div>
-      </div>
+        <Link className="button button-primary" href="/contact">
+          Booking information
+        </Link>
+      </section>
     </div>
   );
 }

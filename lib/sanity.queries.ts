@@ -44,3 +44,44 @@ export const POSTS_WITH_BODY_QUERY = groq`
     publishedAt
   }
 `;
+
+export const UPCOMING_SHOWS_QUERY = groq`
+  *[_type == "show" && status == "scheduled" && defined(startDate) && defined(timezone) && startDate >= now()]
+  | order(startDate asc) {
+    _id,
+    title,
+    startDate,
+    venue,
+    city,
+    stateRegion,
+    timezone,
+    details,
+    ticketUrl
+  }
+`;
+
+export const NEXT_SHOW_QUERY = groq`
+  *[_type == "show" && status == "scheduled" && defined(startDate) && defined(timezone) && startDate >= now()]
+  | order(startDate asc)[0] {
+    _id,
+    title,
+    startDate,
+    venue,
+    city,
+    stateRegion,
+    timezone,
+    ticketUrl
+  }
+`;
+
+export const SOCIAL_UPDATES_QUERY = groq`
+  *[_type == "socialUpdate" && defined(platform) && defined(url) && defined(publishedAt)]
+  | order(publishedAt desc)[0...8] {
+    _id,
+    platform,
+    title,
+    summary,
+    url,
+    publishedAt
+  }
+`;

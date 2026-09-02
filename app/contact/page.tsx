@@ -1,47 +1,60 @@
+import Image from "next/image";
 import Link from "next/link";
+
+const bookingEmail = "BriellaSteinerBooking@gmail.com";
+
+export const metadata = {
+  title: "Contact",
+  description: "Booking and contact information for Briella Steiner.",
+};
 
 export default function ContactPage() {
   return (
-    <div className="card">
-      <h1 className="h1" style={{ fontSize: 34 }}>
-        Contact / Booking
-      </h1>
-
-      <p className="muted" style={{ marginTop: 10 }}>
-        For booking, press, or event inquiries, reach out by email below.
-      </p>
-
-      <div style={{ marginTop: 18 }}>
-        <h2 className="h2">Booking Email</h2>
-
-        <p className="muted" style={{ marginTop: 8, fontSize: 16 }}>
-          <a className="link" href="mailto:BriellaSteinerBooking@gmail.com">
-            BriellaSteinerBooking@gmail.com
+    <div className="interior-page">
+      <section className="contact-layout">
+        <div className="contact-copy">
+          <p className="eyebrow">Booking &amp; inquiries</p>
+          <h1>Let&apos;s make some noise.</h1>
+          <p className="interior-lead">
+            For booking, press, venue, or event inquiries, reach out directly
+            by email.
+          </p>
+          <a className="contact-email" href={`mailto:${bookingEmail}`}>
+            {bookingEmail}
           </a>
-        </p>
+          <div className="booking-representation booking-representation-dark">
+            <span>Artist representation</span>
+            <a href="https://www.semperfibooking.com/" target="_blank" rel="noopener noreferrer">
+              Semper Fi Booking ↗
+            </a>
+          </div>
 
-        <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <a className="nav-link" href="mailto:BriellaSteinerBooking@gmail.com">
-            Email Brie
-          </a>
-          <Link className="nav-link" href="/shows">
-            View Show Dates
-          </Link>
-          <Link className="nav-link" href="/music">
-            Listen on Spotify
-          </Link>
+          <div className="contact-details">
+            <h2>Helpful details to include</h2>
+            <ul>
+              <li>Venue or event name and location</li>
+              <li>Preferred date or dates and set length</li>
+              <li>Sound and PA details, if available</li>
+              <li>Your best contact information</li>
+            </ul>
+          </div>
+
+          <div className="text-links">
+            <Link href="/shows">View show dates <span aria-hidden="true">→</span></Link>
+            <Link href="/music">Listen to Briella <span aria-hidden="true">→</span></Link>
+          </div>
         </div>
-      </div>
 
-      <div className="card" style={{ marginTop: 14 }}>
-        <h2 className="h2">What to include</h2>
-        <ul style={{ margin: 0, paddingLeft: 18 }}>
-          <li className="muted">Venue / event name and location</li>
-          <li className="muted">Preferred date(s) and set length</li>
-          <li className="muted">Sound/PA details (if provided)</li>
-          <li className="muted">Best contact number (optional)</li>
-        </ul>
-      </div>
+        <div className="contact-image-wrap">
+          <Image
+            src="/gallery/gallery7.jpg"
+            alt="Briella Steiner walking in silver boots"
+            fill
+            priority
+            sizes="(max-width: 820px) 100vw, 45vw"
+          />
+        </div>
+      </section>
     </div>
   );
 }

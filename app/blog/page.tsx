@@ -1,155 +1,204 @@
-// app/blog/page.tsx
-import { sanityClient } from "@/lib/sanity.client";
-import { POSTS_WITH_BODY_QUERY } from "@/lib/sanity.queries";
+import type { PortableTextComponents } from "@portabletext/react";
 import { PortableText } from "@portabletext/react";
+import type { ComponentProps } from "react";
+import { sanityClient } from "../../lib/sanity.client";
+import { POSTS_WITH_BODY_QUERY, SOCIAL_UPDATES_QUERY } from "../../lib/sanity.queries";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Blog",
+  description: "News and updates from Briella Steiner.",
+};
+
+type BlogPost = {
+  _id: string;
+  title?: string;
+  publishedAt?: string;
+  excerpt?: string;
+  body?: ComponentProps<typeof PortableText>["value"];
+};
+
+type SocialUpdate = {
+  _id: string;
+  platform?: string;
+  title?: string;
+  summary?: string;
+  url?: string;
+  publishedAt?: string;
+};
+
+const socialFallbacks: SocialUpdate[] = [
+  {
+    _id: "facebook-channel",
+    platform: "facebook",
+    title: "Follow Briella on Facebook",
+    summary: "Performance announcements, music updates, and moments from the road.",
+    url: "https://www.facebook.com/61576749864962",
+  },
+  {
+    _id: "instagram-channel",
+    platform: "instagram",
+    title: "Follow Briella on Instagram",
+    summary: "Photos, reels, and behind-the-scenes updates from Briella.",
+    url: "https://www.instagram.com/briellasteiner.music/",
+  },
+];
+
+const internalOrigin = "https://briellasteiner.com";
+
+function getSafeCmsLink(rawValue: unknown) {
+  if (typeof rawValue !== "string") return null;
+
+  const raw = rawValue.trim();
+  if (!raw || /[\\\u0000-\u001f\u007f]/.test(raw)) return null;
+
+  try {
+    const parsed = new URL(raw, internalOrigin);
+    const isExternalInput = /^https?:\/\//i.test(raw);
+
+    if (isExternalInput && (parsed.protocol === "https:" || parsed.protocol === "http:")) {
+      return { href: parsed.href, external: true };
+    }
+
+    const isInternalInput = raw.startsWith("/") && !raw.startsWith("//");
+    if (isInternalInput && parsed.origin === internalOrigin) {
+      return {
+        href: `${parsed.pathname}${parsed.search}${parsed.hash}`,
+        external: false,
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
 
 function formatDate(iso?: string) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    return new Date(iso).toLocaleDateString(undefined, {
       year: "numeric",
-      month: "short",
+      month: "long",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   } catch {
     return iso;
   }
 }
 
-const portableComponents = {
+function getSafeSocialUrl(raw: unknown, platform?: string) {
+  if (typeof raw !== "string" || (platform !== "facebook" && platform !== "instagram")) return null;
+  try {
+    const url = new URL(raw);
+    const permittedHosts = platform === "facebook"
+      ? new Set(["facebook.com", "www.facebook.com"])
+      : new Set(["instagram.com", "www.instagram.com"]);
+    return url.protocol === "https:" && permittedHosts.has(url.hostname.toLowerCase())
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+const portableComponents: PortableTextComponents = {
   block: {
-    normal: ({ children }: any) => (
-      <p style={{ margin: "10px 0", lineHeight: 1.75 }}>{children}</p>
-    ),
-    h1: ({ children }: any) => (
-      <h1 style={{ margin: "16px 0 10px", fontSize: 28, fontWeight: 900 }}>
-        {children}
-      </h1>
-    ),
-    h2: ({ children }: any) => (
-      <h2 style={{ margin: "14px 0 8px", fontSize: 22, fontWeight: 850 }}>
-        {children}
-      </h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 style={{ margin: "12px 0 6px", fontSize: 18, fontWeight: 800 }}>
-        {children}
-      </h3>
-    ),
-    blockquote: ({ children }: any) => (
-      <blockquote
-        style={{
-          margin: "12px 0",
-          padding: "10px 14px",
-          borderLeft: "3px solid rgba(255,255,255,0.25)",
-          background: "rgba(255,255,255,0.06)",
-          borderRadius: 10,
-          lineHeight: 1.7,
-        }}
-      >
-        {children}
-      </blockquote>
-    ),
-  },
-  list: {
-    bullet: ({ children }: any) => (
-      <ul style={{ margin: "10px 0", paddingLeft: 18, lineHeight: 1.75 }}>
-        {children}
-      </ul>
-    ),
-    number: ({ children }: any) => (
-      <ol style={{ margin: "10px 0", paddingLeft: 18, lineHeight: 1.75 }}>
-        {children}
-      </ol>
-    ),
-  },
-  listItem: {
-    bullet: ({ children }: any) => <li style={{ margin: "6px 0" }}>{children}</li>,
-    number: ({ children }: any) => <li style={{ margin: "6px 0" }}>{children}</li>,
+    normal: ({ children }) => <p>{children}</p>,
+    h2: ({ children }) => <h2>{children}</h2>,
+    h3: ({ children }) => <h3>{children}</h3>,
+    blockquote: ({ children }) => <blockquote>{children}</blockquote>,
   },
   marks: {
-    link: ({ children, value }: any) => (
-      <a
-        href={value?.href}
-        target="_blank"
-        rel="noreferrer"
-        style={{
-          textDecoration: "underline",
-          textUnderlineOffset: 3,
-        }}
-      >
-        {children}
-      </a>
-    ),
+    link: ({ children, value }) => {
+      const link = getSafeCmsLink(value?.href);
+      if (!link) return <>{children}</>;
+
+      return (
+        <a
+          href={link.href}
+          target={link.external ? "_blank" : undefined}
+          rel={link.external ? "noopener noreferrer" : undefined}
+        >
+          {children}
+        </a>
+      );
+    },
   },
 };
 
 export default async function BlogPage() {
-  const posts =
-    (await sanityClient.fetch(POSTS_WITH_BODY_QUERY).catch(() => [])) || [];
+  const [postsResult, socialResult] = await Promise.all([
+    sanityClient.fetch(POSTS_WITH_BODY_QUERY).catch(() => []),
+    sanityClient.fetch(SOCIAL_UPDATES_QUERY).catch(() => []),
+  ]);
+  const posts = (postsResult || []) as BlogPost[];
+  const curatedSocial = ((socialResult || []) as SocialUpdate[]).filter((update) =>
+    Boolean(getSafeSocialUrl(update.url, update.platform)),
+  );
+  const socialUpdates = curatedSocial.length > 0 ? curatedSocial : socialFallbacks;
 
   return (
-    <div className="card" style={{ maxWidth: 980, margin: "0 auto" }}>
-      <h1 className="h1" style={{ fontSize: 34 }}>
-        Blog
-      </h1>
-
-      {posts.length === 0 ? (
-        <p className="muted" style={{ marginTop: 10 }}>
-          No posts yet.
+    <div className="interior-page">
+      <section className="interior-hero blog-hero">
+        <p className="eyebrow">From Briella</p>
+        <h1>Stories &amp; updates</h1>
+        <p className="interior-lead">
+          News from the road, behind-the-scenes moments, and what comes next.
         </p>
-      ) : (
-        <div style={{ marginTop: 18, display: "grid", gap: 22 }}>
-          {posts.map((post: any) => (
-            <article
-              key={post._id}
-              style={{
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 16,
-                padding: 18,
-                background: "rgba(12, 12, 12, 0.55)",
-                overflow: "hidden", // prevents any child from blowing out the card
-              }}
-            >
-              <h2 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>
-                {post.title}
-              </h2>
+      </section>
 
-              <div
-                className="muted"
-                style={{ marginTop: 6, fontSize: 13, opacity: 0.9 }}
-              >
-                {formatDate(post.publishedAt)}
-              </div>
-
-              {post.excerpt ? (
-                <p style={{ marginTop: 12, marginBottom: 0, lineHeight: 1.7 }}>
-                  {post.excerpt}
-                </p>
-              ) : null}
-
-              {Array.isArray(post.body) && post.body.length > 0 ? (
-                <div
-                  style={{
-                    marginTop: 14,
-                    lineHeight: 1.75,
-                    // ✅ THIS FIXES "RUNS OFF THE PAGE"
-                    overflowWrap: "anywhere",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  <PortableText value={post.body} components={portableComponents} />
-                </div>
-              ) : null}
-            </article>
-          ))}
+      <section className="social-section" aria-labelledby="social-heading">
+        <div className="social-heading">
+          <p className="eyebrow">From the socials</p>
+          <h2 id="social-heading">Follow along.</h2>
         </div>
-      )}
+        <div className="social-grid">
+          {socialUpdates.map((update) => {
+            const href = getSafeSocialUrl(update.url, update.platform);
+            if (!href) return null;
+
+            return (
+              <article className="social-card" key={update._id}>
+                <p className="social-platform">{update.platform}</p>
+                <h3>{update.title || `Briella on ${update.platform}`}</h3>
+                {update.summary ? <p>{update.summary}</p> : null}
+                {update.publishedAt ? <time dateTime={update.publishedAt}>{formatDate(update.publishedAt)}</time> : null}
+                <a href={href} target="_blank" rel="noopener noreferrer">
+                  Open {update.platform} ↗
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="blog-feed" aria-label="Blog posts">
+        {posts.length === 0 ? (
+          <div className="empty-state blog-empty-note">
+            <p className="eyebrow">Blog</p>
+            <h2>No blog posts yet.</h2>
+            <p>In the meantime, updates are on Facebook and Instagram.</p>
+          </div>
+        ) : (
+          posts.map((post, index) => (
+            <article className="blog-post" key={post._id}>
+              <div className="blog-post-number">{String(index + 1).padStart(2, "0")}</div>
+              <div>
+                <p className="blog-date">{formatDate(post.publishedAt)}</p>
+                <h2>{post.title || "Untitled update"}</h2>
+                {post.excerpt ? <p className="blog-excerpt">{post.excerpt}</p> : null}
+                {Array.isArray(post.body) && post.body.length > 0 ? (
+                  <div className="portable-text">
+                    <PortableText value={post.body} components={portableComponents} />
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ))
+        )}
+      </section>
     </div>
   );
 }

@@ -1,149 +1,228 @@
-.wrap {
-  max-width: 1360px;
+.photoSection {
+  width: min(100% - 40px, 1320px);
   margin: 0 auto;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.intro {
-  max-width: 760px;
-  margin: 10px auto 0;
+  padding: 40px 0 130px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  align-items: start;
 }
 
 .tile {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  margin: 0;
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  background: #17130f;
 }
 
 .image {
+  object-fit: cover;
+  transition: transform 500ms ease;
+}
+
+.fanGallery {
+  padding: clamp(80px, 9vw, 130px) max(24px, calc((100vw - 1180px) / 2));
+  color: #f5eddf;
+  background: #17130f;
+}
+
+.fanHeading {
+  max-width: 700px;
+  margin-bottom: 46px;
+}
+
+.fanHeading h2,
+.submitIntro h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 7vw, 92px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+}
+
+.fanHeading > p:last-child,
+.submitIntro > p:last-child {
+  max-width: 610px;
+  margin: 24px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  line-height: 1.65;
+  opacity: 0.72;
+}
+
+.fanGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.fanTile {
+  margin: 0;
+  border: 1px solid rgba(245, 237, 223, 0.18);
+  background: #0d0c0a;
+}
+
+.fanImage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.fanImage img { object-fit: cover; }
+
+.fanTile figcaption {
+  min-height: 94px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+}
+
+.fanTile figcaption span {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.fanTile figcaption strong {
+  color: #b8864f;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.submitSection {
+  padding: clamp(80px, 10vw, 140px) max(24px, calc((100vw - 1180px) / 2));
+  display: grid;
+  grid-template-columns: minmax(260px, 0.75fr) minmax(420px, 1.25fr);
+  align-items: start;
+  gap: clamp(50px, 8vw, 120px);
+  background: #e7d6b7 url("/site/aged-parchment-desktop.webp") center / cover;
+}
+
+.submitIntro h2 { color: #0d0c0a; }
+
+.fanForm {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  padding: clamp(24px, 4vw, 46px);
+  color: #f5eddf;
+  background: #17130f;
+  border: 1px solid rgba(184, 134, 79, 0.65);
+  box-shadow: 20px 20px 0 rgba(138, 78, 49, 0.24);
+}
+
+.fanForm label:not(.checkRow) {
+  display: grid;
+  gap: 8px;
+}
+
+.fanForm label > span:first-child {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fanForm input:not([type="checkbox"]),
+.fanForm textarea {
   width: 100%;
-  height: auto;
-  display: block;
+  min-height: 48px;
+  padding: 12px 14px;
+  color: #f5eddf;
+  background: rgba(245, 237, 223, 0.06);
+  border: 1px solid rgba(245, 237, 223, 0.28);
+  border-radius: 0;
+  font: inherit;
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 20px;
-  }
+.fanForm input[type="file"] { padding: 9px; }
+.fanForm textarea { min-height: 96px; resize: vertical; }
 
-  .a {
-    grid-column: 1 / span 3;
-    margin-top: 0;
-  }
-
-  .b {
-    grid-column: 4 / span 2;
-    margin-top: 30px;
-  }
-
-  .c {
-    grid-column: 6 / span 1;
-    margin-top: 95px;
-  }
-
-  .d {
-    grid-column: 1 / span 2;
-    margin-top: -20px;
-  }
-
-  .e {
-    grid-column: 3 / span 2;
-    margin-top: 35px;
-  }
-
-  .f {
-    grid-column: 5 / span 2;
-    margin-top: -10px;
-  }
-
-  .g {
-    grid-column: 1 / span 2;
-    margin-top: 10px;
-  }
-
-  .h {
-    grid-column: 3 / span 3;
-    margin-top: -30px;
-  }
-
-  .i {
-    grid-column: 6 / span 1;
-    margin-top: 40px;
-  }
-
-  .j {
-    grid-column: 2 / span 3;
-    margin-top: -15px;
-  }
+.fanForm small,
+.reviewNote {
+  margin: 0;
+  color: rgba(245, 237, 223, 0.65);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-@media (min-width: 1100px) {
-  .grid {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-    gap: 22px;
-  }
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
 
-  .a {
-    grid-column: 1 / span 3;
-    margin-top: 0;
-  }
+.checkRow {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  align-items: start;
+  gap: 11px;
+  font-size: 13px;
+  line-height: 1.5;
+}
 
-  .b {
-    grid-column: 4 / span 2;
-    margin-top: 18px;
-  }
+.checkRow input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: #b8864f;
+}
 
-  .c {
-    grid-column: 6 / span 2;
-    margin-top: 85px;
-  }
+.fanForm button { justify-self: start; }
+.fanForm button:disabled { cursor: wait; opacity: 0.65; }
 
-  .d {
-    grid-column: 2 / span 2;
-    margin-top: -40px;
-  }
+.formStatus {
+  min-height: 22px;
+  margin: -8px 0 0;
+  color: #e7d6b7;
+  font-size: 13px;
+  line-height: 1.5;
+}
 
-  .e {
-    grid-column: 4 / span 2;
-    margin-top: 30px;
-  }
+.formError { color: #ffb4a3; }
 
-  .f {
-    grid-column: 6 / span 3;
-    margin-top: -20px;
-  }
+.honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
-  .g {
-    grid-column: 1 / span 2;
-    margin-top: 0;
-  }
+.tile:hover .image {
+  transform: scale(1.025);
+}
 
-  .h {
-    grid-column: 3 / span 3;
-    margin-top: -45px;
-  }
+.hero .image { object-position: center 28%; }
+.guitar .image { object-position: center 38%; }
+.live .image { object-position: center 25%; }
+.ownerLive .image { object-position: center 20%; }
+.ownerEditorial .image { object-position: center 42%; }
+.road .image { object-position: center 34%; }
 
-  .i {
-    grid-column: 6 / span 1;
-    margin-top: 28px;
-  }
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .submitSection { grid-template-columns: 1fr; }
+}
 
-  .j {
-    grid-column: 7 / span 2;
-    margin-top: -24px;
-  }
+@media (max-width: 620px) {
+  .photoSection { width: min(100% - 28px, 1320px); padding-bottom: 90px; }
+  .grid { grid-template-columns: 1fr; gap: 12px; }
+  .fanGrid,
+  .formGrid { grid-template-columns: 1fr; }
+  .submitSection { background-image: url("/site/aged-parchment-mobile.webp"); }
+  .fanForm { box-shadow: 10px 10px 0 rgba(138, 78, 49, 0.24); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image { transition: none; }
+  .tile:hover .image { transform: none; }
 }
